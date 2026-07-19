@@ -37,10 +37,10 @@ bash install.sh
 
 ## Git 安装
 
-仓库公开后可以使用：
+直接克隆公开仓库：
 
 ```bash
-git clone <GitHub 仓库地址>
+git clone https://github.com/skye-luo/yier-bubu-codex-pets.git
 cd yier-bubu-codex-pets
 bash install.sh
 ```
