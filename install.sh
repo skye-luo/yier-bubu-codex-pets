@@ -5,7 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 codex_root="${CODEX_HOME:-$HOME/.codex}"
 pets_root="$codex_root/pets"
 install_stamp="$(date +%Y%m%d-%H%M%S)"
-backup_root="$codex_root/pets-backups/yier-bubu-$install_stamp"
+backup_root="$codex_root/pets-backups/yier-bubu-dianzai-$install_stamp"
 
 if command -v shasum >/dev/null 2>&1; then
   (cd "$repo_root" && shasum -a 256 -c SHA256SUMS)
@@ -15,7 +15,7 @@ fi
 
 mkdir -p "$pets_root"
 
-for pet_id in yier bubu; do
+for pet_id in yier bubu dianzai; do
   source_dir="$repo_root/pets/$pet_id"
   target_dir="$pets_root/$pet_id"
 
@@ -37,4 +37,4 @@ for pet_id in yier bubu; do
 done
 
 echo
-echo "安装完成。请重启 Codex，然后前往 设置 → 外观 → Pets 切换一二或布布。"
+echo "安装完成。请重启 Codex，然后前往 设置 → 外观 → Pets 切换一二、布布或点仔。"
