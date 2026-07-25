@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
-"""Switch 一二/布布 between awake and sleeping Codex Pet variants."""
+"""Swap the idle row for 一二/布布 without creating separate Codex pets."""
 
 from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
 
-AWAKE_TO_SLEEP = {
-    "custom:yier": "custom:yier-sleep",
-    "custom:bubu": "custom:bubu-sleep",
+PET_IDS = ("yier", "bubu")
+LEGACY_AVATAR_IDS = {
+    "custom:yier-sleep": "custom:yier",
+    "custom:bubu-sleep": "custom:bubu",
 }
-SLEEP_TO_AWAKE = {value: key for key, value in AWAKE_TO_SLEEP.items()}
 SETTING_RE = re.compile(
     r'^(?P<indent>\s*)selected-avatar-id\s*=\s*"(?P<value>[^"]*)"\s*(?P<comment>#.*)?$'
 )
@@ -25,8 +27,12 @@ SETTING_RE = re.compile(
 
 def parse_args() -> argparse.Namespace:
     codex_root = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    runtime_root = codex_root / "pet-sleep-mode"
     parser = argparse.ArgumentParser(
-        description="22:00–08:00 自动切换一二/布布的睡眠形象。"
+        description=(
+            "22:00–08:00 自动把一二/布布的待机动作换成睡觉，"
+            "工作动作与宠物 ID 保持不变。"
+        )
     )
     parser.add_argument(
         "--mode",
@@ -35,21 +41,33 @@ def parse_args() -> argparse.Namespace:
         help="auto 按本地时间判断；sleep/awake 用于手动测试。",
     )
     parser.add_argument(
+        "--codex-root",
+        type=Path,
+        default=codex_root,
+        help="Codex 数据目录。",
+    )
+    parser.add_argument(
+        "--assets",
+        type=Path,
+        default=runtime_root / "assets",
+        help="白天/夜间图集目录。",
+    )
+    parser.add_argument(
         "--config",
         type=Path,
         default=codex_root / "config.toml",
-        help="Codex config.toml 路径。",
+        help="Codex config.toml 路径；只用于迁移旧睡觉宠物 ID。",
     )
     parser.add_argument(
         "--state",
         type=Path,
-        default=codex_root / "pet-sleep-mode" / "state.json",
-        help="保存白天角色选择的状态文件。",
+        default=runtime_root / "state.json",
+        help="记录最近一次图集切换结果。",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="只输出目标，不修改 config.toml。",
+        help="只输出目标，不修改图集、配置或状态。",
     )
     return parser.parse_args()
 
@@ -103,7 +121,7 @@ def set_selected_avatar(config_text: str, avatar_id: str) -> str:
     return "".join(lines) + suffix + f'\n[desktop]\nselected-avatar-id = "{avatar_id}"\n'
 
 
-def atomic_write(path: Path, text: str) -> None:
+def atomic_write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     existing_mode = path.stat().st_mode if path.exists() else 0o600
     with tempfile.NamedTemporaryFile(
@@ -119,6 +137,38 @@ def atomic_write(path: Path, text: str) -> None:
     os.replace(temp_path, path)
 
 
+def file_digest(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def atomic_copy_if_changed(source: Path, target: Path, dry_run: bool) -> bool:
+    if not source.is_file():
+        raise FileNotFoundError(f"缺少睡眠模式图集：{source}")
+    if target.is_file() and file_digest(source) == file_digest(target):
+        return False
+    if dry_run:
+        return True
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    existing_mode = target.stat().st_mode if target.exists() else 0o644
+    with tempfile.NamedTemporaryFile(
+        mode="wb",
+        dir=target.parent,
+        prefix=f".{target.name}.",
+        delete=False,
+    ) as handle:
+        temp_path = Path(handle.name)
+        with source.open("rb") as source_handle:
+            shutil.copyfileobj(source_handle, handle)
+    os.chmod(temp_path, existing_mode)
+    os.replace(temp_path, target)
+    return True
+
+
 def load_state(path: Path) -> dict[str, object]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -128,8 +178,7 @@ def load_state(path: Path) -> dict[str, object]:
 
 
 def save_state(path: Path, data: dict[str, object]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write(path, json.dumps(data, ensure_ascii=False, indent=2) + "\n")
+    atomic_write_text(path, json.dumps(data, ensure_ascii=False, indent=2) + "\n")
 
 
 def notify_running_app(target: str) -> None:
@@ -139,7 +188,7 @@ def notify_running_app(target: str) -> None:
     )
     node_path = Path(os.environ.get("CODEX_PET_NODE", bundled_node))
     if not node_path.exists() or not script_path.exists():
-        print("提示：Codex 将在下次启动时读取新角色；未找到实时刷新组件。")
+        print("提示：Codex 将在下次启动时读取新图集；未找到实时刷新组件。")
         return
     try:
         result = subprocess.run(
@@ -165,71 +214,77 @@ def desired_mode(requested_mode: str, now: dt.datetime) -> str:
     return "sleep" if now.hour >= 22 or now.hour < 8 else "awake"
 
 
-def choose_target(current: str | None, mode: str, state: dict[str, object]) -> tuple[str | None, str]:
-    if mode == "sleep":
-        if current in AWAKE_TO_SLEEP:
-            state["awake_avatar_id"] = current
-            return AWAKE_TO_SLEEP[current], "进入夜间睡眠"
-        if current in SLEEP_TO_AWAKE:
-            state.setdefault("awake_avatar_id", SLEEP_TO_AWAKE[current])
-            return current, "已经在睡觉"
-        return None, "当前不是一二或布布，不做切换"
-
-    if current in SLEEP_TO_AWAKE:
-        remembered = state.get("awake_avatar_id")
-        fallback = SLEEP_TO_AWAKE[current]
-        target = (
-            remembered
-            if remembered in AWAKE_TO_SLEEP
-            and AWAKE_TO_SLEEP[str(remembered)] == current
-            else fallback
-        )
-        return str(target), "恢复白天角色"
-    return None, "当前已经是白天角色，不做切换"
+def migrate_legacy_selection(
+    config_path: Path,
+    config_text: str,
+    selected_avatar: str | None,
+    dry_run: bool,
+) -> tuple[str | None, bool]:
+    target = LEGACY_AVATAR_IDS.get(selected_avatar or "")
+    if target is None:
+        return selected_avatar, False
+    if not dry_run:
+        atomic_write_text(config_path, set_selected_avatar(config_text, target))
+    print(f"迁移旧睡觉宠物选择：{selected_avatar} → {target}")
+    return target, True
 
 
 def main() -> int:
     args = parse_args()
+    now = dt.datetime.now().astimezone()
+    mode = desired_mode(args.mode, now)
+
     try:
         config_text = args.config.read_text(encoding="utf-8")
     except FileNotFoundError:
-        print(f"未找到 Codex 配置：{args.config}")
-        return 1
+        config_text = ""
+    selected_avatar = get_selected_avatar(config_text)
+    selected_avatar, migrated = migrate_legacy_selection(
+        args.config,
+        config_text,
+        selected_avatar,
+        args.dry_run,
+    )
 
-    now = dt.datetime.now().astimezone()
-    mode = desired_mode(args.mode, now)
-    current = get_selected_avatar(config_text)
+    changed_pet_ids: list[str] = []
+    skipped_pet_ids: list[str] = []
+    for pet_id in PET_IDS:
+        source = args.assets / f"{pet_id}-{mode}.webp"
+        target = args.codex_root / "pets" / pet_id / "spritesheet.webp"
+        if not target.parent.is_dir():
+            skipped_pet_ids.append(pet_id)
+            continue
+        if atomic_copy_if_changed(source, target, args.dry_run):
+            changed_pet_ids.append(pet_id)
+
     state = load_state(args.state)
-    target, reason = choose_target(current, mode, state)
-
-    if target is None or target == current:
-        state.update(
-            {
-                "last_mode": mode,
-                "last_seen_avatar_id": current,
-                "updated_at": now.isoformat(timespec="seconds"),
-            }
-        )
-        if not args.dry_run:
-            save_state(args.state, state)
-        print(f"{reason}：{current or '未选择宠物'}")
-        return 0
-
-    print(f"{reason}：{current} → {target}")
-    if args.dry_run:
-        return 0
-
-    if target != current:
-        atomic_write(args.config, set_selected_avatar(config_text, target))
     state.update(
         {
             "last_mode": mode,
-            "last_seen_avatar_id": target,
+            "selected_avatar_id": selected_avatar,
+            "changed_pet_ids": changed_pet_ids,
+            "skipped_pet_ids": skipped_pet_ids,
             "updated_at": now.isoformat(timespec="seconds"),
         }
     )
-    save_state(args.state, state)
-    notify_running_app(target)
+    if not args.dry_run:
+        save_state(args.state, state)
+
+    label = "夜间睡觉待机" if mode == "sleep" else "白天普通待机"
+    changed_text = "、".join(changed_pet_ids) if changed_pet_ids else "无需更新"
+    print(f"{label}：{changed_text}")
+    if skipped_pet_ids:
+        print(f"未安装，已跳过：{'、'.join(skipped_pet_ids)}")
+
+    selected_pet_id = (
+        selected_avatar.removeprefix("custom:")
+        if selected_avatar and selected_avatar.startswith("custom:")
+        else None
+    )
+    if not args.dry_run and (
+        migrated or selected_pet_id in changed_pet_ids
+    ) and selected_avatar:
+        notify_running_app(selected_avatar)
     return 0
 
 

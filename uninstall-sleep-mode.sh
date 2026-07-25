@@ -14,15 +14,6 @@ fi
 
 launchctl bootout "$user_domain" "$launch_agent_path" >/dev/null 2>&1 || true
 
-for pet_id in yier-sleep bubu-sleep; do
-  target_dir="$codex_root/pets/$pet_id"
-  if [ -e "$target_dir" ]; then
-    mkdir -p "$backup_root"
-    mv "$target_dir" "$backup_root/$pet_id"
-    echo "已移出：$pet_id"
-  fi
-done
-
 if [ -e "$launch_agent_path" ]; then
   mkdir -p "$backup_root/launchd"
   mv "$launch_agent_path" "$backup_root/launchd/"
@@ -33,4 +24,5 @@ if [ -e "$runtime_root" ]; then
   mv "$runtime_root" "$backup_root/runtime/"
 fi
 
-echo "睡眠定时已停用；可恢复文件位于：$backup_root"
+echo "睡眠定时已停用，一二和布布已恢复普通待机。"
+echo "可恢复的定时组件位于：$backup_root"

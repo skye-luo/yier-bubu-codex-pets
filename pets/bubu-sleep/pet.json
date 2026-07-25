@@ -1,6 +1,0 @@
-{
-  "id": "bubu-sleep",
-  "displayName": "布布（睡觉）",
-  "description": "布布的夜间睡眠动画，22:00–08:00 自动使用",
-  "spritesheetPath": "spritesheet.webp"
-}

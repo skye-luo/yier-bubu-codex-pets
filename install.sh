@@ -36,5 +36,15 @@ for pet_id in yier bubu dianzai; do
   echo "已安装：$pet_id"
 done
 
+for legacy_pet_id in yier-sleep bubu-sleep; do
+  legacy_dir="$pets_root/$legacy_pet_id"
+  if [ -e "$legacy_dir" ]; then
+    mkdir -p "$backup_root/legacy-pets"
+    mv "$legacy_dir" "$backup_root/legacy-pets/$legacy_pet_id"
+    echo "已移出旧独立睡觉角色：$legacy_pet_id"
+  fi
+done
+
 echo
 echo "安装完成。请重启 Codex，然后前往 设置 → 外观 → Pets 切换一二、布布或点仔。"
+echo "如需一二、布布在 22:00–08:00 自动睡觉，再运行：bash install-sleep-mode.sh"
