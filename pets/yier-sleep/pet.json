@@ -1,6 +1,0 @@
-{
-  "id": "yier-sleep",
-  "displayName": "一二（睡觉）",
-  "description": "一二的夜间睡眠动画，22:00–08:00 自动使用",
-  "spritesheetPath": "spritesheet.webp"
-}
