@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Swap the idle row for 一二/布布 without creating separate Codex pets."""
+"""Swap the idle row for 一二/布布/点仔 without creating separate Codex pets."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import tempfile
 from pathlib import Path
 
 
-PET_IDS = ("yier", "bubu")
+PET_IDS = ("yier", "bubu", "dianzai")
 LEGACY_AVATAR_IDS = {
     "custom:yier-sleep": "custom:yier",
     "custom:bubu-sleep": "custom:bubu",
@@ -30,7 +30,7 @@ def parse_args() -> argparse.Namespace:
     runtime_root = codex_root / "pet-sleep-mode"
     parser = argparse.ArgumentParser(
         description=(
-            "22:00–08:00 自动把一二/布布的待机动作换成睡觉，"
+            "22:00–08:00 自动把一二/布布/点仔的待机动作换成睡觉，"
             "工作动作与宠物 ID 保持不变。"
         )
     )

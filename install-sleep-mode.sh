@@ -10,7 +10,7 @@ launch_agent_path="$launch_agents_root/com.oneday.codex-pet-sleep.plist"
 launch_label="com.oneday.codex-pet-sleep"
 user_domain="gui/$(id -u)"
 install_stamp="$(date +%Y%m%d-%H%M%S)"
-backup_root="$codex_root/pets-backups/yier-bubu-sleep-mode-$install_stamp"
+backup_root="$codex_root/pets-backups/yier-bubu-dianzai-sleep-mode-$install_stamp"
 
 if command -v shasum >/dev/null 2>&1; then
   (cd "$repo_root" && shasum -a 256 -c SHA256SUMS)
@@ -20,7 +20,7 @@ fi
 
 launchctl bootout "$user_domain" "$launch_agent_path" >/dev/null 2>&1 || true
 
-for pet_id in yier bubu; do
+for pet_id in yier bubu dianzai; do
   source_dir="$repo_root/pets/$pet_id"
   target_dir="$codex_root/pets/$pet_id"
 
@@ -60,7 +60,7 @@ fi
 mkdir -p "$runtime_assets" "$launch_agents_root"
 cp "$repo_root/scripts/pet_sleep_scheduler.py" "$runtime_root/pet_sleep_scheduler.py"
 cp "$repo_root/scripts/select_codex_pet.mjs" "$runtime_root/select_codex_pet.mjs"
-for pet_id in yier bubu; do
+for pet_id in yier bubu dianzai; do
   cp "$repo_root/pets/$pet_id/spritesheet.webp" \
     "$runtime_assets/$pet_id-awake.webp"
   cp "$repo_root/pets/$pet_id/spritesheet-night.webp" \
@@ -79,7 +79,7 @@ launchctl bootstrap "$user_domain" "$launch_agent_path"
 launchctl kickstart -k "$user_domain/$launch_label"
 
 echo
-echo "睡眠模式已启用：设置中仍只有“一二”和“布布”。"
+echo "睡眠模式已启用：设置中仍只有“一二”“布布”和“点仔”。"
 echo "22:00–08:00 无任务时睡觉；工作、等待和检查动作保持正常。"
 echo "现在也已按当前本地时间执行一次。"
 if [ -d "$backup_root" ]; then

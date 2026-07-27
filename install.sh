@@ -47,4 +47,4 @@ done
 
 echo
 echo "安装完成。请重启 Codex，然后前往 设置 → 外观 → Pets 切换一二、布布或点仔。"
-echo "如需一二、布布在 22:00–08:00 自动睡觉，再运行：bash install-sleep-mode.sh"
+echo "如需三个宠物在 22:00–08:00 自动睡觉，再运行：bash install-sleep-mode.sh"

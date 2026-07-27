@@ -6,7 +6,7 @@ runtime_root="$codex_root/pet-sleep-mode"
 launch_agent_path="$HOME/Library/LaunchAgents/com.oneday.codex-pet-sleep.plist"
 user_domain="gui/$(id -u)"
 uninstall_stamp="$(date +%Y%m%d-%H%M%S)"
-backup_root="$codex_root/pets-backups/yier-bubu-sleep-uninstalled-$uninstall_stamp"
+backup_root="$codex_root/pets-backups/yier-bubu-dianzai-sleep-uninstalled-$uninstall_stamp"
 
 if [ -f "$runtime_root/pet_sleep_scheduler.py" ]; then
   /usr/bin/python3 "$runtime_root/pet_sleep_scheduler.py" --mode awake || true
@@ -24,5 +24,5 @@ if [ -e "$runtime_root" ]; then
   mv "$runtime_root" "$backup_root/runtime/"
 fi
 
-echo "睡眠定时已停用，一二和布布已恢复普通待机。"
+echo "睡眠定时已停用，一二、布布和点仔已恢复普通待机。"
 echo "可恢复的定时组件位于：$backup_root"
