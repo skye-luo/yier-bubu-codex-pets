@@ -1,6 +1,7 @@
 {
   "id": "yier",
   "displayName": "一二",
-  "description": "白色圆方头、深棕小耳与围脖的二维表情包风 Codex 小宠物；夜间无任务时自动睡觉",
+  "description": "白色圆方头、深棕小耳与围脖；抱书调研、抱电脑工作、抱本子写作，夜间空闲时自动睡觉",
+  "spriteVersionNumber": 2,
   "spritesheetPath": "spritesheet.webp"
 }

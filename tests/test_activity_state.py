@@ -45,6 +45,11 @@ class ActivityTests(unittest.TestCase):
         self.assertEqual(stable_activity("research", "same", state, now)[0], "writing")
         self.assertEqual(stable_activity("research", "new", state, now)[0], "research")
 
+    def test_conversational_chinese_requests(self):
+        for text, expected in [("写一篇文章", "writing"), ("帮我写一个小红书文案", "writing"),
+                               ("做个PPT", "writing"), ("查一下资料", "research")]:
+            self.assertEqual(classify(text), expected)
+
     def test_day_night_boundaries(self):
         for hour, expected in [(0, "sleep"), (7, "sleep"), (8, "awake"), (21, "awake"), (22, "sleep")]:
             self.assertEqual(desired_mode("auto", dt.datetime(2026, 9, 12, hour)), expected)

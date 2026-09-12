@@ -8,7 +8,7 @@
 
 ## 预览
 
-![新版形象与状态设计](docs/state-concept.png)
+![实际安装素材的八种状态](social/xiaohongshu/02-day-night.png)
 
 | 状态 | 常驻造型 |
 | --- | --- |
@@ -37,8 +37,11 @@
 - [布布完整动作表](docs/bubu-contact-sheet.png)
 - [一二夜间动作表：仅待机行睡觉](docs/yier-sleep-contact-sheet.png)
 - [布布夜间动作表：仅待机行睡觉](docs/bubu-sleep-contact-sheet.png)
+- [最初确认的形象设计稿](docs/state-concept.png)
 
 ## 一行安装
+
+需要支持 v2 自定义宠物图集的 Codex Desktop。若旧版应用不显示宠物或注视动作异常，请先更新应用。下面命令同时适用于首次安装和从旧项目升级。
 
 ### Windows
 
@@ -130,6 +133,17 @@ bash uninstall.sh
 
 卸载脚本不会直接删除文件，而会移动到 `~/.codex/pets-backups/`，方便恢复。
 
+## 重新组装动作变体
+
+`state-source/` 保存本版已经清理透明边缘的六帧素材行；`sleep-source/` 保留旧版来源，仅供历史参考。安装不需要 Pillow；只有重新组装图片时需要。
+
+```bash
+python3 scripts/build_night_atlas.py --awake pets/yier/spritesheet.webp --sleep-row state-source/yier/sleep.webp --output pets/yier/spritesheet-night.webp
+python3 scripts/build_activity_atlases.py --pet-dir pets/yier --research-row state-source/yier/research.webp --writing-row state-source/yier/writing.webp
+```
+
+布布将命令中的 `yier` 换成 `bubu`。脚本只拼装已确认素材，不生成或重画姿势。修改后运行 `node scripts/update_checksums.mjs` 和 `bash verify.sh`。
+
 ## 项目结构
 
 ```text
@@ -139,6 +153,7 @@ bash uninstall.sh
 │   ├── bubu/
 │   └── dianzai/
 ├── sleep-source/
+├── state-source/
 ├── docs/
 ├── scripts/
 ├── launchd/

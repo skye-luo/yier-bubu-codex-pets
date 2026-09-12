@@ -3,8 +3,8 @@ function Get-TaskKind {
     param([string]$Text)
     $patterns = [ordered]@{
         coding = '写代码|编程|修复|修bug|改代码|开发|实现|测试|重构|coding|debug|refactor|pytest|npm test|apply_patch'
-        research = '查资料|查找资料|搜索|调研|检索|search_query|web__run|web\.run|research|browse|look up'
-        writing = '写作|写文章|写报告|写文案|写正文|写周报|写方案|写邮件|做PPT|做演示|写文档|规划|润色|改写|生成文档|docx|pptx|write (?:a |an )?(?:report|article|email)|draft'
+        research = '查.{0,4}资料|搜索|调研|检索|search_query|web__run|web\.run|research|browse|look up'
+        writing = '写作|写.{0,8}(?:文章|报告|文案|正文|周报|方案|邮件|文档)|(?:做|制作|生成).{0,4}(?:PPT|演示)|规划|润色|改写|生成文档|docx|pptx|write (?:a |an )?(?:report|article|email)|draft'
     }
     $winner = 'coding'; $best = 0
     foreach ($entry in $patterns.GetEnumerator()) {

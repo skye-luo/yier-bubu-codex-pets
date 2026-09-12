@@ -47,12 +47,12 @@ def gradient(top: tuple[int, int, int], bottom: tuple[int, int, int]) -> Image.I
     return canvas.convert("RGBA")
 
 
-def sprite(pet_id: str, sleeping: bool = False, row: int = 0, activity: str | None = None) -> Image.Image:
+def sprite(pet_id: str, sleeping: bool = False, row: int = 0, activity: str | None = None, frame: int = 0) -> Image.Image:
     filename = "spritesheet-night.webp" if sleeping else "spritesheet.webp"
     if activity:
         filename = f"variants/{activity}-{'sleep' if sleeping else 'awake'}.webp"
     atlas = Image.open(ROOT / "pets" / pet_id / filename).convert("RGBA")
-    return atlas.crop((0, row * CELL[1], CELL[0], (row + 1) * CELL[1]))
+    return atlas.crop((frame * CELL[0], row * CELL[1], (frame + 1) * CELL[0], (row + 1) * CELL[1]))
 
 
 def fit_sprite(image: Image.Image, max_width: int, max_height: int) -> Image.Image:
@@ -103,7 +103,7 @@ def build_cover() -> None:
     canvas.alpha_composite(bubu, (785 - bubu.width // 2, 730))
     text_center(draw, (265, 1180), "一二", F_LABEL, (77, 58, 55, 255))
     text_center(draw, (785, 1180), "布布", F_LABEL, (77, 58, 55, 255))
-    badge(draw, (348, 1257), "GitHub 已开源", (87, 71, 68, 230), (255, 255, 255, 255))
+    badge(draw, (400, 1257), "安装代码已开源", (87, 71, 68, 230), (255, 255, 255, 255))
     footer(draw)
     canvas.convert("RGB").save(OUTPUT / "01-cover.png", quality=95)
 
@@ -127,7 +127,7 @@ def build_sleep() -> None:
         draw.rounded_rectangle(rect, radius=30, fill=(255, 255, 255, 225))
         text_center(draw, (left + 232, top + 10), label, F_LABEL, (59, 65, 102, 255))
         for pet_id, center_x in (("yier", left + 125), ("bubu", left + 340)):
-            pet = fit_sprite(sprite(pet_id, sleeping, row, activity), 175, 160)
+            pet = fit_sprite(sprite(pet_id, sleeping, row, activity, 2 if row == 5 else 0), 175, 160)
             canvas.alpha_composite(pet, (center_x - pet.width // 2, top + 53 + 160 - pet.height))
     text_center(draw, (540, 1320), "22:00–08:00，空闲时自动入睡", F_SMALL, (67, 73, 111, 255))
     footer(draw)
@@ -143,9 +143,8 @@ def build_install() -> None:
     draw.rounded_rectangle((65, 475, 1015, 1035), radius=45, fill=(44, 40, 40, 245))
     badge(draw, (100, 535), "复制这句话", (229, 177, 159, 255), (51, 42, 39, 255))
     command_lines = [
-        "帮我安装或更新这两个宠物：",
-        "https://github.com/skye-luo/",
-        "yier-bubu-codex-pets",
+        "帮我安装或更新这个宠物包：",
+        "https://github.com/skye-luo/yier-bubu-codex-pets",
     ]
     for index, command in enumerate(command_lines):
         draw.text((100, 665 + index * 72), command, font=F_CODE, fill=(245, 241, 237, 255))

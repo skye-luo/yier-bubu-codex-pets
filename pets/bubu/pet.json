@@ -1,6 +1,7 @@
 {
   "id": "bubu",
   "displayName": "布布",
-  "description": "灰粉棕圆方头、黄色腮红与较大圆点眼的二维表情包风 Codex 小宠物；夜间无任务时自动睡觉",
+  "description": "暖杏棕圆方头、黄色腮红与较大圆点眼；抱书调研、抱电脑工作、抱本子写作，夜间空闲时自动睡觉",
+  "spriteVersionNumber": 2,
   "spritesheetPath": "spritesheet.webp"
 }

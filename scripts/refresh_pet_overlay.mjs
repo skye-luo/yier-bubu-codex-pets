@@ -12,7 +12,7 @@ try {
   await new Promise((resolve, reject) => {
     const socket = new WebSocket(endpoint);
     const timer = setTimeout(() => { socket.close(); reject(new Error("timeout")); }, 3000);
-    socket.addEventListener("open", () => socket.send(JSON.stringify({ id: 1, method: "Page.reload" })));
+    socket.addEventListener("open", () => socket.send(JSON.stringify({ id: 1, method: "Page.reload", params: { ignoreCache: true } })));
     socket.addEventListener("message", event => {
       const message = JSON.parse(String(event.data));
       if (message.id !== 1) return;

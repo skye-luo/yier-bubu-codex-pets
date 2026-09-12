@@ -84,7 +84,7 @@ function Request-PetOverlayRefresh {
         $timeout.CancelAfter(5000)
         $socket.ConnectAsync([Uri]$overlay.webSocketDebuggerUrl, $timeout.Token).GetAwaiter().GetResult()
 
-        $payload = [Text.Encoding]::UTF8.GetBytes('{"id":1,"method":"Page.reload"}')
+        $payload = [Text.Encoding]::UTF8.GetBytes('{"id":1,"method":"Page.reload","params":{"ignoreCache":true}}')
         $segment = [System.ArraySegment[byte]]::new($payload)
         $socket.SendAsync(
             $segment,

@@ -24,7 +24,7 @@ try {
     }
 
     . (Join-Path $RepoRoot 'scripts\activity_state.ps1')
-    foreach ($case in @(@('帮我查资料做调研', 'research'), @('帮我写文章和润色', 'writing'), @('修复代码并测试', 'coding'))) {
+    foreach ($case in @(@('帮我查资料做调研', 'research'), @('帮我写文章和润色', 'writing'), @('修复代码并测试', 'coding'), @('写一篇文章', 'writing'), @('查一下资料', 'research'), @('做个PPT', 'writing'))) {
         if ((Get-TaskKind -Text $case[0]).kind -ne $case[1]) { throw '任务类型识别失败' }
     }
 
