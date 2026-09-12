@@ -28,8 +28,11 @@ SETTING_RE = re.compile(
 
 
 def parse_args() -> argparse.Namespace:
-    codex_root = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
-    runtime_root = codex_root / "pet-sleep-mode"
+    script_root = Path(__file__).resolve().parent
+    codex_root = (
+        script_root.parent if script_root.name == "pet-sleep-mode"
+        else Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    )
     parser = argparse.ArgumentParser(
         description=(
             "22:00–08:00 自动把一二/布布的待机动作换成睡觉，"
@@ -57,19 +60,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--assets",
         type=Path,
-        default=runtime_root / "assets",
+        default=None,
         help="白天/夜间图集目录。",
     )
     parser.add_argument(
         "--config",
         type=Path,
-        default=codex_root / "config.toml",
+        default=None,
         help="Codex config.toml 路径；只用于迁移旧睡觉宠物 ID。",
     )
     parser.add_argument(
         "--state",
         type=Path,
-        default=runtime_root / "state.json",
+        default=None,
         help="记录最近一次图集切换结果。",
     )
     parser.add_argument(
@@ -77,7 +80,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="只输出目标，不修改图集、配置或状态。",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    runtime_root = args.codex_root / "pet-sleep-mode"
+    args.assets = args.assets or runtime_root / "assets"
+    args.config = args.config or args.codex_root / "config.toml"
+    args.state = args.state or runtime_root / "state.json"
+    return args
 
 
 def get_selected_avatar(config_text: str) -> str | None:
