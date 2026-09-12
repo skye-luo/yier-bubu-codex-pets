@@ -4,7 +4,7 @@ set -euo pipefail
 codex_root="${CODEX_HOME:-$HOME/.codex}"
 pets_root="$codex_root/pets"
 uninstall_stamp="$(date +%Y%m%d-%H%M%S)"
-backup_root="$codex_root/pets-backups/yier-bubu-dianzai-uninstalled-$uninstall_stamp"
+backup_root="$codex_root/pets-backups/yier-bubu-uninstalled-$uninstall_stamp"
 moved=0
 
 for pet_id in yier bubu dianzai; do

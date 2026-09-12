@@ -6,13 +6,13 @@ runtime_root="$codex_root/pet-sleep-mode"
 launch_agent_path="$HOME/Library/LaunchAgents/com.oneday.codex-pet-sleep.plist"
 user_domain="gui/$(id -u)"
 uninstall_stamp="$(date +%Y%m%d-%H%M%S)"
-backup_root="$codex_root/pets-backups/yier-bubu-dianzai-sleep-uninstalled-$uninstall_stamp"
-
-if [ -f "$runtime_root/pet_sleep_scheduler.py" ]; then
-  /usr/bin/python3 "$runtime_root/pet_sleep_scheduler.py" --mode awake || true
-fi
+backup_root="$codex_root/pets-backups/yier-bubu-sleep-uninstalled-$uninstall_stamp"
 
 launchctl bootout "$user_domain" "$launch_agent_path" >/dev/null 2>&1 || true
+
+if [ -f "$runtime_root/pet_sleep_scheduler.py" ]; then
+  /usr/bin/python3 "$runtime_root/pet_sleep_scheduler.py" --mode awake --activity coding || true
+fi
 
 if [ -e "$launch_agent_path" ]; then
   mkdir -p "$backup_root/launchd"

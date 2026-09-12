@@ -36,6 +36,10 @@ def parse_args() -> argparse.Namespace:
         help="完整睡眠图集；取其第 0 行。",
     )
     sleep_input.add_argument(
+        "--sleep-row", type=Path,
+        help="已完成透明处理和归一化的 1152x208 六帧睡眠行；直接拼装，不再缩放。",
+    )
+    sleep_input.add_argument(
         "--sleep-strip",
         type=Path,
         help="包含 6 个透明睡眠姿势的横向素材。",
@@ -245,7 +249,16 @@ def save_contact_sheet(path: Path, atlas: Image.Image) -> None:
 def main() -> int:
     args = parse_args()
     awake = load_awake_atlas(args.awake)
-    if args.sleep_strip:
+    if args.sleep_row:
+        source_row = Image.open(args.sleep_row).convert("RGBA")
+        if source_row.size != (1152, 208):
+            raise ValueError(f"{args.sleep_row}: 应为 1152x208 六帧睡眠行")
+        idle_row = Image.new("RGBA", (1536, 208), (0, 0, 0, 0))
+        idle_row.paste(source_row, (0, 0))
+        preview_frames = [source_row.crop((i * 192, 0, (i + 1) * 192, 208)) for i in range(6)]
+        if awake.height == 2288:
+            idle_row.paste(preview_frames[0], (6 * 192, 0))
+    elif args.sleep_strip:
         idle_row, preview_frames = make_sleep_row_from_strip(args.sleep_strip)
     else:
         idle_row, preview_frames = make_sleep_row_from_atlas(args.sleep, awake.size)

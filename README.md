@@ -1,66 +1,112 @@
 # 一二 × 布布 × 点仔：Codex 宠物
 
-一套可在 Codex Desktop 中切换使用的三角色宠物包，包含“一二”“布布”和“点仔”。三个角色都有完整工作状态动画，并可在每天 22:00–次日 08:00 自动进入夜间待机：没有任务时睡觉，工作、等待确认或检查时保持原动作。
+统一的 Codex Desktop 宠物项目，包含“一二”“布布”和“点仔”。v2.0.0 更新了一二、布布的形象和循环动作：白天精神满满，查资料抱书、写代码抱电脑、写作抱本子；晚上 22:00–次日 08:00 空闲时自动睡觉。点仔原有形象、完整工作动画和夜间睡眠保持不变。
 
-> 这是非官方的粉丝制作版本。公开发布或再分发角色素材前，请先取得角色权利人的授权；详见 [ASSET-NOTICE.md](ASSET-NOTICE.md)。
+原 `yier-bubu-codex-pet`（单数）项目的 Windows 安装和任务识别功能已合并至本项目（复数 `pets`）。今后的更新以这里为准；旧仓库、历史版本和下载链接保留。
+
+> 非官方、非商业的粉丝体验版本。角色素材不在 MIT 许可范围内，详见 [ASSET-NOTICE.md](ASSET-NOTICE.md)。
 
 ## 预览
 
-| 一二 | 布布 | 点仔 |
-| --- | --- | --- |
-| ![一二待机动画](docs/previews/yier-idle.gif) | ![布布待机动画](docs/previews/bubu-idle.gif) | ![点仔待机动画](docs/previews/dianzai-idle.gif) |
+![实际安装素材的八种状态](social/xiaohongshu/02-day-night.png)
+
+| 状态 | 常驻造型 |
+| --- | --- |
+| 白天待机 | 挺起小身体，呼吸、眨眼 |
+| 查找资料 | 抱书和放大镜 |
+| 写代码 / 通用工作 | 抱电脑，持续敲键盘 |
+| 写作规划 | 抱本子，拿铅笔 |
+| 检查结果 | 抱检查板，认真核对 |
+| 等你回应 | 坐好，期待地望向你 |
+| 遇到问题 | 挠挠头，有点困惑 |
+| 夜间空闲 | 枕着小枕头睡觉 |
+
+造型会在对应任务阶段循环保持；拖动、点击和鼠标注视仍使用原生交互。每个角色始终只有一个宠物 ID。
+
+| 一二 | 布布 |
+| --- | --- |
+| ![一二待机动画](docs/previews/yier-idle.gif) | ![布布待机动画](docs/previews/bubu-idle.gif) |
+
+点仔继续保留：[白天动画](docs/previews/dianzai-idle.gif) · [夜间动画](docs/previews/dianzai-sleep.gif) · [完整动作表](docs/dianzai-contact-sheet.png)。本次新增的三种任务工作造型仅适用于一二、布布。
+
+| 一二夜间待机 | 布布夜间待机 |
+| --- | --- |
+| ![一二睡眠动画](docs/previews/yier-sleep.gif) | ![布布睡眠动画](docs/previews/bubu-sleep.gif) |
 
 - [一二完整动作表](docs/yier-contact-sheet.png)
 - [布布完整动作表](docs/bubu-contact-sheet.png)
-- [点仔完整动作表（v2，含 16 个视线方向）](docs/dianzai-contact-sheet.png)
-
-| 一二夜间待机 | 布布夜间待机 | 点仔夜间待机 |
-| --- | --- | --- |
-| ![一二睡眠动画](docs/previews/yier-sleep.gif) | ![布布睡眠动画](docs/previews/bubu-sleep.gif) | ![点仔睡眠动画](docs/previews/dianzai-sleep.gif) |
-
 - [一二夜间动作表：仅待机行睡觉](docs/yier-sleep-contact-sheet.png)
 - [布布夜间动作表：仅待机行睡觉](docs/bubu-sleep-contact-sheet.png)
-- [点仔夜间动作表：仅待机行睡觉](docs/dianzai-sleep-contact-sheet.png)
+- [最初确认的形象设计稿](docs/state-concept.png)
 
-## 一键安装（macOS）
+## 一行安装
 
-下载并解压项目后，在项目目录运行：
+需要支持 v2 自定义宠物图集的 Codex Desktop。若旧版应用不显示宠物或注视动作异常，请先更新应用。下面命令同时适用于首次安装和从旧项目升级。
+
+### Windows
+
+打开 PowerShell，复制这一行（不需要提前安装 Git）：
+
+```powershell
+irm https://raw.githubusercontent.com/skye-luo/yier-bubu-codex-pets/v2.0.0/quick-install.ps1 | iex
+```
+
+这条命令会：
+
+- 将“一二”“布布”和“点仔”安装到 `%USERPROFILE%\.codex\pets`；
+- 注册一个当前用户的 Windows 定时任务，每分钟运行一次，运行期间每 5 秒检查任务类型与本地时间；
+- 每天 22:00–次日 08:00 只把待机动作换成睡觉，其他工作状态不变；
+- 不创建“一二（睡觉）”或“布布（睡觉）”等独立角色。
+
+安装完成后重启 ChatGPT/Codex，进入 `设置 → Pets`，选择“一二”或“布布”。如果睡眠时间切换后浮窗没有立即刷新，下次启动应用时一定会读取新的图集。
+
+如果希望先查看脚本再执行：
+
+```powershell
+git clone --branch v2.0.0 https://github.com/skye-luo/yier-bubu-codex-pets.git
+cd yier-bubu-codex-pets
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install-sleep-mode.ps1
+```
+
+手动测试 Windows 睡眠切换：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "$HOME\.codex\pet-sleep-mode\pet_sleep_scheduler.ps1" -Mode Sleep
+powershell -ExecutionPolicy Bypass -File "$HOME\.codex\pet-sleep-mode\pet_sleep_scheduler.ps1" -Mode Awake
+```
+
+Windows 卸载（文件会移动到备份目录，不会直接删除）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\uninstall-sleep-mode.ps1
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
+```
+
+### macOS
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/skye-luo/yier-bubu-codex-pets/v2.0.0/quick-install.sh | bash
+```
+
+这条命令会安装一二、布布和点仔，并启用 22:00–08:00 自动睡眠。安装完成后重启 Codex，进入 `设置 → 外观 → Pets`，选择喜欢的角色。
+
+如果你希望先查看脚本再执行，也可以使用透明的分步安装：
+
+```bash
+git clone --branch v2.0.0 https://github.com/skye-luo/yier-bubu-codex-pets.git
+cd yier-bubu-codex-pets
 bash install.sh
-```
-
-脚本会：
-
-1. 校验宠物文件是否完整；
-2. 备份本机已有的同名宠物；
-3. 安装到 `~/.codex/pets/yier`、`~/.codex/pets/bubu` 和 `~/.codex/pets/dianzai`。
-
-安装后重启 Codex，进入：
-
-```text
-设置 → 外观 → Pets
-```
-
-选择“一二”“布布”或“点仔”即可切换。
-
-## 自动睡眠模式（macOS）
-
-安装普通宠物后，在项目目录运行：
-
-```bash
 bash install-sleep-mode.sh
 ```
 
-睡眠模式会：
+`install-sleep-mode.sh` 会启用自动睡眠：
 
-1. 保持设置中只有“一二”“布布”和“点仔”三个原角色，不注册独立睡觉版；
-2. 每天 22:00 将三个角色的待机行动作换成睡觉；
-3. 工作、等待确认、检查等其他状态继续使用原动作；
-4. 每天 08:00 恢复普通待机；
-5. 每 5 分钟校正一次，并在登录或电脑唤醒后按当前时间立即校正。
-
-运行中的 Codex 会直接刷新宠物浮窗，不需要整晚重启应用。本机若没有开启 Codex 调试端口，图集仍会切换，并在下次启动 Codex 时生效。
+- 设置中保留“一二”“布布”和“点仔”，不会注册独立睡觉角色；
+- 每天 22:00 将待机行换成睡觉，08:00 恢复普通待机；
+- 工作、等待确认、检查等其他状态不变；
+- 每 10 秒检查任务类型和本地时间，并在登录或唤醒后校正；
+- Codex 已运行时会尝试立即刷新宠物浮窗，否则下次启动时生效。
 
 手动测试：
 
@@ -69,50 +115,34 @@ python3 ~/.codex/pet-sleep-mode/pet_sleep_scheduler.py --mode sleep
 python3 ~/.codex/pet-sleep-mode/pet_sleep_scheduler.py --mode awake
 ```
 
-可恢复地停用：
+## 自动识别的范围
 
-```bash
-bash uninstall-sleep-mode.sh
-```
+运行、等待回应、检查结果和错误由应用的原生宠物状态决定。附加调度器在本机检查近期本地任务日志，根据当前请求与工具调用中的关键词，选择查资料、写代码或写作造型；同一任务内至少保持 30 秒，避免来回闪动。未识别的任务使用抱电脑的通用工作造型。云端任务或没有本地日志的任务不能保证细分识别。
 
-## Git 安装
+只读取最近三天目录中、最近 30 分钟更新的至多 16 份日志末尾，每份最多 512 KiB。请求和工具文本不上传、不写入状态文件；状态文件只保存类别、匿名任务标记和切换时间。旧版本应用、未开放本地实时刷新接口的环境可能需要重启应用才能读取切换后的图集；调度器不会自动开启调试端口。
 
-直接克隆公开仓库：
-
-```bash
-git clone https://github.com/skye-luo/yier-bubu-codex-pets.git
-cd yier-bubu-codex-pets
-bash install.sh
-bash install-sleep-mode.sh
-```
-
-## 手动安装
-
-将以下三个目录完整复制到 `~/.codex/pets/`：
-
-```text
-pets/yier
-pets/bubu
-pets/dianzai
-```
-
-不要只复制图片；每个目录中的 `pet.json` 和 `spritesheet.webp` 必须放在一起。
+已安装旧版的用户重新运行对应系统的一行安装命令即可更新，旧宠物和定时组件会备份到 `~/.codex/pets-backups/`。
 
 ## 校验与卸载
 
-校验下载内容：
-
 ```bash
 bash verify.sh
-```
-
-可恢复地卸载：
-
-```bash
+bash uninstall-sleep-mode.sh
 bash uninstall.sh
 ```
 
-卸载脚本不会直接删除文件，而是将宠物移动到 `~/.codex/pets-backups/`。
+卸载脚本不会直接删除文件，而会移动到 `~/.codex/pets-backups/`，方便恢复。
+
+## 重新组装动作变体
+
+`state-source/` 保存本版已经清理透明边缘的六帧素材行；`sleep-source/` 保留旧版来源，仅供历史参考。安装不需要 Pillow；只有重新组装图片时需要。
+
+```bash
+python3 scripts/build_night_atlas.py --awake pets/yier/spritesheet.webp --sleep-row state-source/yier/sleep.webp --output pets/yier/spritesheet-night.webp
+python3 scripts/build_activity_atlases.py --pet-dir pets/yier --research-row state-source/yier/research.webp --writing-row state-source/yier/writing.webp
+```
+
+布布将命令中的 `yier` 换成 `bubu`。脚本只拼装已确认素材，不生成或重画姿势。修改后运行 `node scripts/update_checksums.mjs` 和 `bash verify.sh`。
 
 ## 项目结构
 
@@ -120,32 +150,26 @@ bash uninstall.sh
 .
 ├── pets/
 │   ├── yier/
-│   │   ├── pet.json
-│   │   ├── spritesheet.webp
-│   │   └── spritesheet-night.webp
 │   ├── bubu/
-│   │   ├── pet.json
-│   │   ├── spritesheet.webp
-│   │   └── spritesheet-night.webp
 │   └── dianzai/
-│       ├── pet.json
-│       ├── spritesheet.webp
-│       └── spritesheet-night.webp
 ├── sleep-source/
-│   ├── yier.webp
-│   ├── bubu.webp
-│   └── dianzai.png
+├── state-source/
 ├── docs/
-├── launchd/
 ├── scripts/
+├── launchd/
+├── social/xiaohongshu/
+├── install.ps1
+├── install-sleep-mode.ps1
+├── quick-install.ps1
+├── uninstall.ps1
+├── uninstall-sleep-mode.ps1
+├── verify.ps1
 ├── install.sh
 ├── install-sleep-mode.sh
+├── quick-install.sh
 ├── uninstall.sh
 ├── uninstall-sleep-mode.sh
-├── verify.sh
-└── SHA256SUMS
+└── verify.sh
 ```
 
-## 许可说明
-
-安装脚本和项目说明采用 MIT 许可，见 [LICENSE-CODE.md](LICENSE-CODE.md)。角色名称、形象、动画图集及预览图片不在 MIT 许可范围内，详见 [ASSET-NOTICE.md](ASSET-NOTICE.md)。
+安装脚本和项目说明采用 MIT 许可，见 [LICENSE-CODE.md](LICENSE-CODE.md)。角色名称、形象、动画图集及预览图片不在 MIT 许可范围内。

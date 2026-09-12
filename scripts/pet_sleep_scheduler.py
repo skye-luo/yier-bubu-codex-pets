@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Swap the idle row for 一二/布布/点仔 without creating separate Codex pets."""
+"""Swap the idle row for 一二/布布 without creating separate Codex pets."""
 
 from __future__ import annotations
 
@@ -14,6 +14,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from activity_state import KINDS, recent_activity, stable_activity
+
 
 PET_IDS = ("yier", "bubu", "dianzai")
 LEGACY_AVATAR_IDS = {
@@ -26,13 +28,22 @@ SETTING_RE = re.compile(
 
 
 def parse_args() -> argparse.Namespace:
-    codex_root = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
-    runtime_root = codex_root / "pet-sleep-mode"
+    script_root = Path(__file__).resolve().parent
+    codex_root = (
+        script_root.parent if script_root.name == "pet-sleep-mode"
+        else Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    )
     parser = argparse.ArgumentParser(
         description=(
-            "22:00–08:00 自动把一二/布布/点仔的待机动作换成睡觉，"
+            "22:00–08:00 自动把一二/布布的待机动作换成睡觉，"
             "工作动作与宠物 ID 保持不变。"
         )
+    )
+    parser.add_argument(
+        "--activity",
+        choices=("auto", *KINDS),
+        default="auto",
+        help="auto 根据本地近期任务日志选择工作造型；也可手动指定。",
     )
     parser.add_argument(
         "--mode",
@@ -49,19 +60,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--assets",
         type=Path,
-        default=runtime_root / "assets",
+        default=None,
         help="白天/夜间图集目录。",
     )
     parser.add_argument(
         "--config",
         type=Path,
-        default=codex_root / "config.toml",
+        default=None,
         help="Codex config.toml 路径；只用于迁移旧睡觉宠物 ID。",
     )
     parser.add_argument(
         "--state",
         type=Path,
-        default=runtime_root / "state.json",
+        default=None,
         help="记录最近一次图集切换结果。",
     )
     parser.add_argument(
@@ -69,7 +80,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="只输出目标，不修改图集、配置或状态。",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    runtime_root = args.codex_root / "pet-sleep-mode"
+    args.assets = args.assets or runtime_root / "assets"
+    args.config = args.config or args.codex_root / "config.toml"
+    args.state = args.state or runtime_root / "state.json"
+    return args
 
 
 def get_selected_avatar(config_text: str) -> str | None:
@@ -182,7 +198,7 @@ def save_state(path: Path, data: dict[str, object]) -> None:
 
 
 def notify_running_app(target: str) -> None:
-    script_path = Path(__file__).with_name("select_codex_pet.mjs")
+    script_path = Path(__file__).with_name("refresh_pet_overlay.mjs")
     bundled_node = Path(
         "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
     )
@@ -192,7 +208,7 @@ def notify_running_app(target: str) -> None:
         return
     try:
         result = subprocess.run(
-            [str(node_path), str(script_path), target],
+            [str(node_path), str(script_path)],
             check=False,
             capture_output=True,
             text=True,
@@ -233,6 +249,12 @@ def main() -> int:
     args = parse_args()
     now = dt.datetime.now().astimezone()
     mode = desired_mode(args.mode, now)
+    state = load_state(args.state)
+    if args.activity == "auto":
+        candidate, activity_key = recent_activity(args.codex_root, now)
+        activity, activity_key = stable_activity(candidate, activity_key, state, now)
+    else:
+        activity, activity_key = args.activity, "manual"
 
     try:
         config_text = args.config.read_text(encoding="utf-8")
@@ -250,6 +272,9 @@ def main() -> int:
     skipped_pet_ids: list[str] = []
     for pet_id in PET_IDS:
         source = args.assets / f"{pet_id}-{mode}.webp"
+        variant = args.assets / f"{pet_id}-{activity}-{mode}.webp"
+        if activity != "coding" and variant.is_file():
+            source = variant
         target = args.codex_root / "pets" / pet_id / "spritesheet.webp"
         if not target.parent.is_dir():
             skipped_pet_ids.append(pet_id)
@@ -257,10 +282,13 @@ def main() -> int:
         if atomic_copy_if_changed(source, target, args.dry_run):
             changed_pet_ids.append(pet_id)
 
-    state = load_state(args.state)
+    if activity != state.get("last_activity") or activity_key != state.get("activity_key"):
+        state["activity_changed_at"] = now.timestamp()
     state.update(
         {
             "last_mode": mode,
+            "last_activity": activity,
+            "activity_key": activity_key,
             "selected_avatar_id": selected_avatar,
             "changed_pet_ids": changed_pet_ids,
             "skipped_pet_ids": skipped_pet_ids,
@@ -272,19 +300,13 @@ def main() -> int:
 
     label = "夜间睡觉待机" if mode == "sleep" else "白天普通待机"
     changed_text = "、".join(changed_pet_ids) if changed_pet_ids else "无需更新"
-    print(f"{label}：{changed_text}")
+    if changed_pet_ids or args.dry_run:
+        print(f"{label} / {activity}：{changed_text}")
     if skipped_pet_ids:
         print(f"未安装，已跳过：{'、'.join(skipped_pet_ids)}")
 
-    selected_pet_id = (
-        selected_avatar.removeprefix("custom:")
-        if selected_avatar and selected_avatar.startswith("custom:")
-        else None
-    )
-    if not args.dry_run and (
-        migrated or selected_pet_id in changed_pet_ids
-    ) and selected_avatar:
-        notify_running_app(selected_avatar)
+    if not args.dry_run and (migrated or changed_pet_ids):
+        notify_running_app(selected_avatar or "installed pets")
     return 0
 
 
