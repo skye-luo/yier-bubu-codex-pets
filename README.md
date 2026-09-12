@@ -89,7 +89,7 @@ powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
 curl -fsSL https://raw.githubusercontent.com/skye-luo/yier-bubu-codex-pets/v2.0.0/quick-install.sh | bash
 ```
 
-这条命令会安装两个宠物并启用 22:00–08:00 自动睡眠。安装完成后重启 Codex，进入 `设置 → 外观 → Pets`，选择“一二”或“布布”。
+这条命令会安装一二、布布和点仔，并启用 22:00–08:00 自动睡眠。安装完成后重启 Codex，进入 `设置 → 外观 → Pets`，选择喜欢的角色。
 
 如果你希望先查看脚本再执行，也可以使用透明的分步安装：
 
@@ -102,7 +102,7 @@ bash install-sleep-mode.sh
 
 `install-sleep-mode.sh` 会启用自动睡眠：
 
-- 设置中始终只有“一二”和“布布”，不会注册独立睡觉角色；
+- 设置中保留“一二”“布布”和“点仔”，不会注册独立睡觉角色；
 - 每天 22:00 将待机行换成睡觉，08:00 恢复普通待机；
 - 工作、等待确认、检查等其他状态不变；
 - 每 10 秒检查任务类型和本地时间，并在登录或唤醒后校正；
